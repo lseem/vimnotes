@@ -49,7 +49,8 @@ function M.toggleCC()
 	vim.api.nvim_create_autocmd("BufWritePost", {
 		group = M.compiler_group_id,
 		callback = function()
-			M.notesCompiler()
+			-- vim.fn.expand('%:t') is e.g. 'index.md' currently open buffer
+			M.notesCompiler(vim.fn.expand('%:t'))
 		end
 	})
 	print("Compiler started. Will recompile on file save.")
@@ -68,7 +69,6 @@ function M.mdToHTML(mdFilename, listItems)
 	if mdFilename == nil then
 		return
 	else
-		print("Compiling " .. mdFilename)
 		local htmlFilename = vim.fn.systemlist("basename " .. mdFilename .. " .md")[1] .. ".html"
 		local htmlFilePath = M.temp_dir .. "/site/" .. htmlFilename
 		local creationDate = vim.fn.system("cd " .. M.uservars.notesPath .. " && git log --follow --format='%ad' --date=short -- " .. mdFilename .. " | tail -n 1")
@@ -90,7 +90,7 @@ function M.mdToHTML(mdFilename, listItems)
 	end
 end
 
-function M.notesCompiler()
+function M.notesCompiler(priorityFile)
 	local jsNotesList = "[\n"
 	local listItemsPartialHTML = ""
 	local mdFiles = {}
@@ -99,13 +99,23 @@ function M.notesCompiler()
 		print("Error! Couldn't open directory " .. M.uservars.notesPath .. ": " .. err)
 		return
 	end
+	local all_entries = {}
 	while true do
-	local entries, err = vim.loop.fs_readdir(handle)
-	if err then
-		print("Error reading directory: " .. err)
-		break
+		local entries, err = vim.loop.fs_readdir(handle)
+		if err then
+			print("Error reading directory: " .. err)
+			break
+		end
+		if not entries or #entries == 0 then break end
+		for _, entry in ipairs(entries) do
+			if entry.name ~= priorityFile then
+				table.insert(all_entries, entry)
+			end
+		end
+		table.insert(all_entries, 1, { name = priorityFile })
+		--entries = all_entries
 	end
-	if not entries or #entries == 0 then break end
+	local entries = all_entries
 	for _, mdFile in ipairs(entries) do
 		if mdFile.name ~= mdIndex and mdFile.name ~= "README.md" and mdFile.name ~= ".git" and mdFile.name ~= "tools" then
 			table.insert(mdFiles, mdFile.name)
@@ -119,10 +129,9 @@ function M.notesCompiler()
 			listItemsPartialHTML = listItemsPartialHTML .. "<li><a href=" .. htmlLink .. ">" .. mdFileTitle .. "</a><small>[created: " .. creationDate .. ", latest update: " .. latestUpdateDate .. "]</small></li>\n"
 		end
 	end
-end
+
 	vim.loop.fs_closedir(handle)
 	jsNotesList = jsNotesList .. "];"
-
 
 	for _, mdFilename in ipairs(mdFiles) do
 		M.mdToHTML(mdFilename, listItemsPartialHTML)
