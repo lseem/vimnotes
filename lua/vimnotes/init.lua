@@ -91,6 +91,9 @@ function M.mdToHTML(mdFilename, listItems)
 end
 
 function M.notesCompiler(priorityFile)
+	if priorityFile == "index.md" then
+		priorityFile = nil
+	end
 	local jsNotesList = "[\n"
 	local listItemsPartialHTML = ""
 	local mdFiles = {}
@@ -112,12 +115,13 @@ function M.notesCompiler(priorityFile)
 				table.insert(all_entries, entry)
 			end
 		end
+	end
+	if priorityFile ~= nil then	
 		table.insert(all_entries, 1, { name = priorityFile })
-		--entries = all_entries
 	end
 	local entries = all_entries
 	for _, mdFile in ipairs(entries) do
-		if mdFile.name ~= mdIndex and mdFile.name ~= "README.md" and mdFile.name ~= ".git" and mdFile.name ~= "tools" then
+		if mdFile.name ~= mdIndex and mdFile.name ~= "README.md" and mdFile.type == "file" then
 			table.insert(mdFiles, mdFile.name)
 			local creationDate = vim.fn.systemlist("cd " .. M.uservars.notesPath .. " && git log --follow --format='%ad' --date=short -- " .. mdFile.name .. " | tail -n 1")[1] or "N/A"
 			local latestUpdateDate = vim.fn.systemlist("cd " .. M.uservars.notesPath .. " && git log -n 1 --format='%ad' --date=short -- " .. mdFile.name)[1] or "N/A"
