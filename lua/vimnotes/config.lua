@@ -10,12 +10,14 @@ M.defaults = {
 	cssPath = os.getenv("HOME") .. "/docs/notes/tools/style.css",
 	searchNotesPath = os.getenv("HOME") .. "/docs/notes/tools/searchNotes.js",
 	bibPath = os.getenv("HOME") .. "/docs/notes/tools/biblio.bib",
+	latexMacrosPath = os.getenv("HOME") .. "/docs/notes/tools/macros.tex",
 	-- further information about notes folder
 	mdIndex = "index.md",
 	port = "8000",
 	browser = "firefox --new-window",
 	keymap_toggleCC = "<leader>lc",
-	keymap_view = "<leader>lv"
+	keymap_view = "<leader>lv",
+	keymap_startServer = "<leader>ls",
 }
 
 function M.setup(user_config)

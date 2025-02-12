@@ -16,6 +16,7 @@ function M.setup(user_config)
 	M.uservars = config.options
 	vim.keymap.set("n", M.uservars.keymap_toggleCC, M.toggleCC, { desc = "Start vimnotes continuous compiler", noremap = true, silent = true })
 	vim.keymap.set("n", M.uservars.keymap_view, M.view, { desc = "View notes in browser", noremap = true, silent = true })
+	vim.keymap.set("n", M.uservars.keymap_startServer, M.startServer, { desc = "Start the server. Useful if you already have a browser open at the website but the server is not running.", noremap = true, silent = true })
 
 	-- create the directory structure
 	M.temp_dir = vim.fn.tempname()
@@ -58,6 +59,7 @@ end
 
 function M.startServer()
 	vim.fn.jobstart("darkhttpd " .. M.temp_dir .. "/site --port " .. M.uservars.port)
+	print("Server started.")
 end
 
 function M.view()
